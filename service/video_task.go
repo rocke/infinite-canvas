@@ -397,7 +397,11 @@ func UpdateVideoTaskFromPoll(task model.VideoTask, update VideoTaskPollUpdate) e
 		extra, _ := json.Marshal(map[string]string{"model": task.Model, "path": "/videos"})
 		return repository.SaveFailedTranslatedVideoTask(task, model.CreditLog{ID: newID("credit"), UserID: task.UserID, Type: model.CreditLogTypeAIRefund, Amount: task.Credits, Remark: "模型调用失败返还 " + task.Model, Extra: string(extra), CreatedAt: current})
 	}
-	return repository.UpdateVideoTask(task)
+	if task.Source == "canvas" || task.Source == "video-workbench" {
+		return repository.UpdateVideoTask(task)
+	}
+	_, err := repository.SaveVideoTask(task)
+	return err
 }
 
 func NormalizeVideoTaskStatus(status string) string {

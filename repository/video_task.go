@@ -12,7 +12,7 @@ func SaveFailedTranslatedVideoTask(task model.VideoTask, refundLog model.CreditL
 		return err
 	}
 	return db.Transaction(func(tx *gorm.DB) error {
-		updated := tx.Model(&model.VideoTask{}).Where("id = ? AND status NOT IN ?", task.ID, []string{"completed", "failed", "cancelled", "canceled"}).Select("*").Omit("RequestBody", "ResponseBody", "WorkflowRef").Updates(&task)
+		updated := tx.Model(&model.VideoTask{}).Where("id = ? AND status NOT IN ?", task.ID, []string{"completed", "failed", "cancelled", "canceled"}).Select("*").Updates(&task)
 		if updated.Error != nil {
 			return updated.Error
 		}
@@ -53,13 +53,7 @@ func UpdateVideoTask(task model.VideoTask) error {
 	}
 	return db.Model(&model.VideoTask{}).
 		Where("id = ? AND status <> ?", task.ID, "cancelled").
-		Select(
-			"UpstreamTaskID", "Status", "Progress", "Seconds", "Size",
-			"VideoURL", "Error", "ErrorDetail",
-			"ParameterTranslationSnapshot", "LastResponse",
-			"UpdatedAt", "LastPolledAt", "CompletedAt",
-		).
-		Updates(&task).Error
+		Select("*").Updates(&task).Error
 }
 
 func GetVideoTask(id string) (model.VideoTask, bool, error) {
@@ -130,7 +124,7 @@ func ListDueVideoTasks(limit int) ([]model.VideoTask, error) {
 		limit = 100
 	}
 	var tasks []model.VideoTask
-	err = db.Omit("RequestBody", "ResponseBody", "WorkflowRef").Where("status IN ?", []string{"queued", "in_progress", "processing", "running", "unknown"}).Where("(workflow_ref = '' OR workflow_ref IS NULL)").
+	err = db.Where("status IN ?", []string{"queued", "in_progress", "processing", "running", "unknown"}).Where("(workflow_ref = '' OR workflow_ref IS NULL)").
 		Order("created_at ASC").
 		Limit(limit).
 		Find(&tasks).Error

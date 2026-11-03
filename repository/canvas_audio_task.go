@@ -7,7 +7,7 @@ func SaveCanvasAudioTask(task model.CanvasAudioTask) (model.CanvasAudioTask, err
 	if err != nil {
 		return task, err
 	}
-	return task, db.Create(&task).Error
+	return task, db.Save(&task).Error
 }
 
 func UpdateCanvasAudioTask(task model.CanvasAudioTask) (model.CanvasAudioTask, error) {
@@ -18,11 +18,7 @@ func UpdateCanvasAudioTask(task model.CanvasAudioTask) (model.CanvasAudioTask, e
 
 	return task, db.Model(&model.CanvasAudioTask{}).
 		Where("user_id = ? AND id = ? AND status <> ?", task.UserID, task.ID, "cancelled").
-		Select(
-			"Status", "Progress", "ResponseBody", "Error", "ErrorDetail",
-			"AudioURL", "StorageKey", "MimeType", "Bytes",
-			"UpdatedAt", "StartedAt", "CompletedAt",
-		).
+		Select("*").
 		Updates(&task).Error
 }
 
@@ -44,12 +40,11 @@ func HasActiveCanvasAudioTasks() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	var task model.CanvasAudioTask
-	query := db.Model(&model.CanvasAudioTask{}).Select("id").
+	var count int64
+	err = db.Model(&model.CanvasAudioTask{}).
 		Where("status IN ?", []string{"queued", "processing", "running", "in_progress"}).
-		Limit(1).
-		Find(&task)
-	return query.RowsAffected > 0, query.Error
+		Count(&count).Error
+	return count > 0, err
 }
 
 func DeleteFinishedCanvasAudioTasksBefore(before string) error {

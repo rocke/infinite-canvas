@@ -2309,11 +2309,9 @@ function HistoryLogCard({
                     <Button size="small" icon={<RotateCcw className="size-3.5" />} onClick={() => closeThen(onRetry)}>
                         重试
                     </Button>
-                    {firstImage ? (
-                        <Button size="small" icon={<Brush className="size-3.5" />} onClick={() => closeThen(() => onMaskEdit(firstImage))}>
-                            局部重绘
-                        </Button>
-                    ) : null}
+                    <Button size="small" icon={<Brush className="size-3.5" />} onClick={() => closeThen(() => onMaskEdit(firstImage))}>
+                        局部重绘
+                    </Button>
                     <Button size="small" icon={<FolderPlus className="size-3.5" />} onClick={() => setCategoryOpen((value) => !value)}>
                         分类
                     </Button>
